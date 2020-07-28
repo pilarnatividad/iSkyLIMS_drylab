@@ -1,3 +1,4 @@
+
 from rest_framework import serializers
 from iSkyLIMS_drylab.models import PipelineExternalDataJobs
 from iSkyLIMS_drylab.models import ParameterPipeline
@@ -9,12 +10,29 @@ class ParameterPipelineSerializer (serializers.ModelSerializer):
          model = ParameterPipeline
          fields = '__all__'
 
+#class PipelineExternalDataJobsSerializer (serializers.ModelSerializer):
+#    serviceRequestNumber = ServiceSerializer(many=True)
+#    class Meta:
+#         model = PipelineExternalDataJobs
+#         fields = '__all__'
+
+
+class ServiceSerializer (serializers.ModelSerializer):
+     #serviceProjectNames = serializers.StringRelatedField(many=True)
+     class Meta:
+         model = Service
+         fields = ['serviceRequestNumber','serviceFileExt','serviceProjectNames','serviceFileExt']
+
 class PipelineExternalDataJobsSerializer (serializers.ModelSerializer):
-    class Meta:
+     #serviceRequestNumber = ServiceSerializer(many=True) 
+     class Meta:
          model = PipelineExternalDataJobs
          fields = '__all__'
 
+
 class PipelineExternalDataJobsBSerializer (serializers.ModelSerializer):
+    #serviceRequestNumber =  ServiceSerializer(many=True)
+
     class Meta:
          model = PipelineExternalDataJobs
          fields =  ['serviceRequestNumber','jobState']
@@ -25,9 +43,9 @@ class SamplesInProjectSerializer (serializers.ModelSerializer):
          fields = ['sampleName']
 
 
-class ServiceSerializer (serializers.ModelSerializer):
-    serviceProjectNames = serializers.StringRelatedField(many=True)
-    class Meta: 
-        model = Service
-        fields =['serviceRequestNumber','serviceFileExt', 'serviceProjectNames', 'serviceFileExt']
+#class ServiceSerializer (serializers.ModelSerializer):
+#    serviceProjectNames = serializers.StringRelatedField(many=True)
+#    class Meta: 
+#        model = Service
+#        fields =['serviceRequestNumber','serviceFileExt', 'serviceProjectNames', 'serviceFileExt']
 
