@@ -8,17 +8,18 @@ from iSkyLIMS_drylab.models import ParameterPipeline
 from iSkyLIMS_wetlab.models import SamplesInProject
 from iSkyLIMS_wetlab.models import Projects
 from iSkyLIMS_drylab.models import Service
+from iSkyLIMS_drylab.models import RequestedProjectInServices
 from .serializers import PipelineExternalDataJobsSerializer
 from .serializers import PipelineExternalDataJobsBSerializer
 from .serializers import ParameterPipelineSerializer
-from .serializers import SamplesInProjectSerializer
 from .serializers import ServiceSerializer
-# Create your views here.
-#class PipelinesViewSet(viewsets.ModelViewSet):
-#    serializer_class = PipelinesSerializer
-#    queryset = Pipelines.objects.all()
 
-# view to load all the records from the model  PipelineExternalDataJobs 
+try:
+   from iSkyLIMS_wetlab.utils.api.wetlab_api  import *
+   wetlab_api_available = True
+except:
+   wetlab_api_available = False
+
 @api_view(['GET',])
 def service_list(request):
     service = Service.objects.all()
@@ -54,14 +55,17 @@ def get_pipeline(request,pipeline):
 
 @api_view(['GET'],)
 def get_samplesinproject(request,service):
-   try:
-      project_name = Service.objects.filter(serviceRequestNumber = service).serviceProjectNames
-      project_id = Projects.objects.get(projectName__exact = project_name).id
-      samples = SamplesInProject.objects.filter(project_id = project_id)
-   except SamplesInProject.DoesNotExist:
-      return Response(status=status.HTTP_404_FOUND)
-   serializer = SamplesInProjectSerializer(samples, many=True)
-   return Response(serializer.data)
+   serv = Service.objects.get(serviceRequestNumber__exact = service)
+   service_id = serv.id
+   project_list = RequestedProjectInServices.objects.filter(projectService = service_id)
+   projects_id=[]
+   for project in project_list:
+       projects_id.append(str(project.get_requested_external_project_id()))
+     
+   samples =  get_samples_projects(projects_id)
+
+   #serializer = samples
+   return Response(samples)
 
 
 #view to update the entire record
@@ -71,14 +75,14 @@ def api_update_job(request, service):
       pipejob = PipelineExternalDataJobs.objects.get(serviceRequestNumber=service)
    except PipelineExternalDataJobs.DoesNotExist:
       return Response({'message': 'Pipe does not exist'},status = status.HTTP_404_NOT_FOUND)
-   
+
    #pipejob_data = JSONParser().parse(request)
    pipejob_serializer = PipelineExternalDataJobsSerializer(pipejob,data=request.data)
    if pipejob_serializer.is_valid():
        pipejob_serializer.save()
        return Response(pipejob_serializer.data)
-   return Response(pipejob_serializer.errors, status = status.HTTP_400_BAD_REQUEST) 
-   
+   return Response(pipejob_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+
 # view to update the field passed in request, from the service passed by argument
 @api_view(['PATCH',])
 def api_update_state(request, service):
@@ -86,10 +90,10 @@ def api_update_state(request, service):
       pipejob = PipelineExternalDataJobs.objects.get(serviceRequestNumber=service)
    except PipelineExternalDataJobs.DoesNotExist:
       return Response({'message': 'Pipe does not exist'},status = status.HTTP_404_NOT_FOUND)
- 
+
    #pipejob_data = JSONParser().parse(request)
    pipejob_serializer = PipelineExternalDataJobsBSerializer(pipejob,data=request.data)
    if pipejob_serializer.is_valid():
        pipejob_serializer.save()
        return Response(pipejob_serializer.data)
-   return Response(pipejob_serializer.errors, status = status.HTTP_400_BAD_REQUEST)  
+   return Response(pipejob_serializer.errors, status = status.HTTP_400_BAD_REQUEST)

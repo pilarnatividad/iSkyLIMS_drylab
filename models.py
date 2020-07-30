@@ -211,7 +211,7 @@ class Service(models.Model):
 	serviceAvailableService = TreeManyToManyField(
 				AvailableService,
 				verbose_name=_("AvailableServices"))
-
+    #not use serviceProjectNames
 	serviceProjectNames = models.ManyToManyField(
 				'iSkyLIMS_wetlab.Projects',
 				verbose_name=_("User's projects"),blank=True)
