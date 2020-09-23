@@ -20,6 +20,15 @@ try:
 except:
    wetlab_api_available = False
 
+def get_projectsid(service):
+   serv = Service.objects.get(serviceRequestNumber__exact = service)
+   service_id = serv.id
+   project_list = RequestedProjectInServices.objects.filter(projectService = service_id)
+   projects_id=[]
+   for project in project_list:
+       projects_id.append(str(project.get_requested_external_project_id()))
+   return projects_id
+
 @api_view(['GET',])
 def service_list(request):
     service = Service.objects.all()
@@ -55,18 +64,22 @@ def get_pipeline(request,pipeline):
 
 @api_view(['GET'],)
 def get_samplesinproject(request,service):
-   serv = Service.objects.get(serviceRequestNumber__exact = service)
-   service_id = serv.id
-   project_list = RequestedProjectInServices.objects.filter(projectService = service_id)
-   projects_id=[]
-   for project in project_list:
-       projects_id.append(str(project.get_requested_external_project_id()))
-     
+   #serv = Service.objects.get(serviceRequestNumber__exact = service)
+   #service_id = serv.id
+   #project_list = RequestedProjectInServices.objects.filter(projectService = service_id)
+   #projects_id=[]
+   #for project in project_list:
+ #   projects_id.append(str(project.get_requested_external_project_id()))
+   projects_id = get_projectsid(service)
    samples =  get_samples_projects(projects_id)
 
    #serializer = samples
    return Response(samples)
 
+@api_view(['GET'],)
+def get_runfolder(request,project):
+    runfolder =  get_run_folder_from_user_project(project)
+    return Response(runfolder)
 
 #view to update the entire record
 @api_view(['PUT',])
